@@ -8,7 +8,6 @@ import About from './About'
 import { useState } from 'react'
 import initialMessageList from '../data/message-list.json'
 import NotFound from './NotFound'
-import Message from './Message'
 import MessageDetail from './MessageDetail'
 
 const App = () => {
