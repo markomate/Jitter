@@ -3,19 +3,21 @@ import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-d
 import MessageForm from './MessagesForm'
 import Navigation from './Navigation'
 import LoginForm from './LoginForm'
+import SignupForm from './SignupForm'
 import Messages from './Messages'
 import About from './About'
-import { useState } from 'react'
-import initialMessageList from '../data/message-list.json'
 import NotFound from './NotFound'
 import MessageDetail from './MessageDetail'
 import { reducer } from '../utils/reducer'
+import { StateContext } from '../utils/stateContext'
+import { getMessages } from '../services/messagesServices'
 
 const App = () => {
   // useReducer handles 
   const initialState = {
     messageList: [],
-    loggedInUser: ""
+    loggedInUser: sessionStorage.getItem("username") || null,
+    token: sessionStorage.getItem("token") || null
   }
   
   // useReducer recieves two params
@@ -24,52 +26,35 @@ const App = () => {
   // store -> actually that's the name for the state
   // dispatch -> is the function that triggers the reducer function, its argument is an action
   const [store, dispatch] = useReducer(reducer, initialState)
-  const {messageList, loggedInUser} = store
+  const {loggedInUser} = store
 
   // const [loggedInUser, setLoggedInUser] = useState("")
   // const [messageList, setMessageList] = useState(initialMessageList)
-  
-  const activateUser = (username) => {
-    // setLoggedInUser(username)
-    dispatch({
-      type: "setLoggedInUser",
-      data: username
-    })
-  }
 
-  const addMessage = (text) => {
-    const message = {
-      text: text,
-      user: loggedInUser,
-      id: nextId(messageList)
-    }
-    // setMessageList(
-    //   (messageList) => [...messageList, message]
-    // )
-    dispatch({
-      type: "addMessage",
-      data: message
-    })
-  }
+  // const activateUser = (username) => {
+  //   // setLoggedInUser(username)
 
-  function nextId(data) {
-    //first exculde the empty data case. 
-    if(data.length === 0) return 1;
-
-    //second handle if data is not empty
-    const sortData = data.sort((a,b) => a.id - b.id)
-    const nextId = sortData[sortData.length - 1].id + 1 
-    return nextId
-  }
+  // }
 
   useEffect(
     ()=>{
-      //fetch
+      // axios.get("http://localhost:4000/messages")
+      // .then(response => {
+      //   console.log(response.data)
+      //   dispatch({
+      //     type: "setMessageList",
+      //     data: response.data
+      //   })
+      // })
       //setMessageList(initialMessageList)
-      dispatch({
-        type: "setMessageList",
-        data: initialMessageList
+      getMessages()
+      .then(messages => {
+        dispatch({
+          type: "setMessageList",
+          data: messages
+        })
       })
+      .catch(e => {console.log(e)})
     }
     ,
     []
@@ -77,31 +62,29 @@ const App = () => {
 
   return (
     <div >
-          <h1>Jitter</h1>
-          {/* { !loggedInUser ?
-            <LoginForm activateUser={activateUser} />
-            :
-            <MessageForm loggedInUser={loggedInUser} addMessage={addMessage} /> 
-          }
-          <Messages messageList={messageList} /> */}
-          <Router>
-            <Navigation loggedInUser={loggedInUser} activateUser={activateUser} />
-            <Routes>
-              <Route path="/" element={<Navigate to="messages" />} />
-              <Route path="messages">
-                <Route index element={<Messages messageList={messageList}/>}/>                <Route path="new" element={
-                  loggedInUser ?
-                  <MessageForm loggedInUser={loggedInUser} addMessage={addMessage} />
-                  :
-                  <Navigate to="/login" />
-                } />
-                <Route path=":messageId" element={<MessageDetail messageList={messageList} />} />
-              </Route>
-              <Route path="about" element={<About />} />
-              <Route path="login" element={<LoginForm activateUser={activateUser} />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
+          {/* Wrap all the componenets that use global state like loggedInUser and messageList in the state context provider */}
+          <StateContext.Provider value={{store, dispatch}}>
+          {/* Wrap all the componenets involed in the app's routing */}
+            <Router>
+              <Navigation />
+              <Routes>
+                <Route path="/" element={<Navigate to="messages" />} />
+                <Route path="messages">
+                  <Route index element={<Messages />}/>                <Route path="new" element={
+                    loggedInUser ?
+                    <MessageForm />
+                    :
+                    <Navigate to="/login" />
+                  } />
+                  <Route path=":messageId" element={<MessageDetail />} />
+                </Route>
+                <Route path="about" element={<About />} />
+                <Route path="login" element={<LoginForm />} />
+                <Route path="signup" element={<SignupForm />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Router>
+          </StateContext.Provider>
     </div>
   )
 }
