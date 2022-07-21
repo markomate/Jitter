@@ -3,7 +3,7 @@
 import axios from "axios";
 
 const jitterAPI = axios.create({
-  baseURL: 'http://localhost:4000'
+  baseURL: 'https://jitter-rails-api.herokuapp.com/'
 })
 
 jitterAPI.interceptors.request.use(req => {
