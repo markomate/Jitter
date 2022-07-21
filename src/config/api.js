@@ -1,5 +1,5 @@
 // information from the backend, URL
-import 'dotenv/config'
+// import 'dotenv/config'
 import axios from "axios";
 
 const jitterAPI = axios.create({
