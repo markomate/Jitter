@@ -4,7 +4,7 @@ import axios from "axios";
 
 const jitterAPI = axios.create({
   // baseURL: process.env.BACKEND_URL
-  baseURL: 'https://jitter-rails-api.herokuapp.com/'
+  baseURL: "https://jitter-rails-api.herokuapp.com/"
 })
 
 jitterAPI.interceptors.request.use(req => {
